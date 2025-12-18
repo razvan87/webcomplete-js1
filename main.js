@@ -1,15 +1,16 @@
 const users = [];
-let userAdded = 0;
 
 do {
-    let confirmation = confirm("Please add a new user.");
-    if (!confirmation) {
-        break;
+    if (users.length === 0) {
+        const confirmation = confirm("Please add the first user. (OK for Yes, Cancel for No)");
+        if (!confirmation) {
+            break;
+        }
     }
+
     const userInfo = getUserInfo();
     users.push(userInfo);
-    userAdded++;
-} while (confirm(`You have added ${userAdded} users. Do you want to enter more users? (OK for Yes, Cancel for No)`))
+} while (confirm(`You have added ${users.length} users. Do you want to enter more users? (OK for Yes, Cancel for No)`))
 
 function getUserInfo() {
     const name = prompt("Enter user name:");
@@ -18,11 +19,12 @@ function getUserInfo() {
         return getUserInfo();
     }
 
-    const age = Number(prompt("Enter user age:"));
-    if (isNaN(age) || age <= 0) {
+    const age = Number(prompt("Enter user age (1-99):"));
+    if (!Number.isInteger(age) || age < 1 || age > 99) {
         alert("Invalid age entered. Please try again.");
         return getUserInfo();
     }
+
     const attendance = confirm("Is user attending? (OK for Yes, Cancel for No)");
     
     return { 
@@ -35,7 +37,7 @@ function getUserInfo() {
 function showAttendancePercentage() {
     const attendingUsers = users.filter(user => user.attendance);
     const percentage = (attendingUsers.length / users.length) * 100;
-    alert(`Attendance Percentage: ${percentage.toFixed(2)}%`);
+    alert(`Attendance percentage: ${percentage.toFixed(2)}%`);
 }
 
 function creatTeams(numberOfTeams) {
@@ -49,25 +51,18 @@ function creatTeams(numberOfTeams) {
         return;
     }
 
-    const shuffledUsersArray = shuffleArray(users.filter(user => user.attendance));
+    const shuffledPresentUsersArray = shuffleArray(users.filter(user => user.attendance));
 
-    const teams = []; 
-    for (let i = 0; i < shuffledUsersArray.length; i++) {
-        const indexTeam = i % numberOfTeams;
-        if (!teams[indexTeam]) {
-            teams[indexTeam] = [];
-        }
-        team = {
-            name: shuffledUsersArray[i].name,
-            index: i
-        }
+    const teams = Array.from({ length: numberOfTeams }, () => []);
+    shuffledPresentUsersArray.forEach((user, index) => {
+        teams[index % numberOfTeams].push({ name: user.name, index: index });
+    });
+    
+    displayTeams(teams);
+}
 
-        teams[indexTeam].push(team);
-    }
-
-    console.log(`Teams info: ${JSON.stringify(teams, null, 2)}`);
+function displayTeams(teams) {
     console.log("Teams:");
-
     teams.forEach((team, index) => {
         console.log(`TEAM ${index + 1}: `);
         team.forEach(user => {
@@ -75,7 +70,6 @@ function creatTeams(numberOfTeams) {
         });
     });
 }
-
 
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
@@ -85,10 +79,9 @@ function shuffleArray(array) {
     return array;
 }
 
-console.log("Final Student List:");
 console.table(users);
 showAttendancePercentage();
 if (confirm("Do you want to create teams?")) {
-    const numberOfTeams = Number(prompt("Enter number of teams:"));
+    const numberOfTeams = Number(prompt("Please enter teams number:"));
     creatTeams(numberOfTeams)
 }
